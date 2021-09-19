@@ -2,6 +2,7 @@ import pandas as pd
 import glob
 import pymongo
 from pymongo import MongoClient
+from pymongo import cursor
 import xlrd
 
 # Variables globales para mongo
@@ -41,14 +42,76 @@ def insertData(data):
         collection.insert_one(row)
 
 
-def getOne():
-    dictionary = collection.find_one({}, {'_id': False, 'index': False})
+def getOne(titulo):
+    dictionary = collection.find_one({'Title':titulo}, {'_id': False, 'index': False})
     return(dictionary)
-
-
-def getAll():
-    cursor = collection.find({}, {'_id': False, 'index': False})
+#Consulta 1
+def getTotalPersonasPais():
+    """Mostrar de cada pais el total de personas que visitaron el cine en la semana"""
+    cursor = collection.aggregate([{ '$group': {'_id': "$Country", 'personas': {'$sum': "$Week\nAdm"}}}])
     return(list(cursor))
+
+#Consulta 2
+def getTotalPersonas():
+    """Mostrar el total de personas de los 5 paises que visitaron el cine en la semana"""
+    cursor = collection.aggregate([
+        {
+            '$group': {
+            '_id': 'null',
+            'total_personas': {
+                '$sum': "$Week\nAdm"
+            }
+            }
+        },
+        {
+            '$project': {
+            '_id': 0
+            }
+        }
+    ])
+    return(list(cursor))
+
+#Consulta 3
+def getTotalPersonasCadenaPais():
+    """Mostrar el total de personas que acudieron al cine en la semana, por cadena de cine para cada pais"""
+    cursor = collection.aggregate([
+        {
+            '$group': {
+            '_id': {
+                'Pais': "$Country",
+                'Cadena': "$Circuit"
+            },
+            'personas': {
+                '$sum': "$Week\nAdm"
+            }
+            }
+        },
+        {
+            '$sort':{
+                '_id.Pais': 1
+            }
+        }
+    ])
+    
+    return (list(cursor))
+
+#Consulta 4
+def getAsistenciaTotalPeliculas():
+    """El total de personas que vieron cada pelicula en centroamerica"""
+    cursor = collection.aggregate([
+        {   
+            '$group': {
+                '_id': {
+                    'Titulo': "$Title"
+                },
+                'personas': {
+                        '$sum': "$Week\nAdm"
+                 }
+            }
+        }
+    ])
+    
+    return (list(cursor))
 
 
 def data():
@@ -67,6 +130,15 @@ def data():
     dframe = pd.concat(df_list, ignore_index=True)
 
     newDFrame = dframe.iloc[:, [1, 4, 5, 15, 23, 34, 42, 46, 47, 48, 49]]
+    
+    newDFrame = newDFrame.apply(lambda x: x.astype(str).str.upper())
+
+    newDFrame['Weekend\nAdm'] = pd.to_numeric(newDFrame['Weekend\nAdm'])
+    newDFrame['Week\nAdm'] = pd.to_numeric(newDFrame['Week\nAdm'])
+    newDFrame['Weekend\nGross $'] = pd.to_numeric(newDFrame['Weekend\nGross $'], downcast="float")
+    newDFrame['Week\nGross $'] = pd.to_numeric(newDFrame['Week\nGross $'], downcast="float")
+
+
 
     insertData(newDFrame)
     return("Success")
