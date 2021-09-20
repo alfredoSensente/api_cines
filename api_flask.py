@@ -39,6 +39,26 @@ def getAsistenciaTotalPeliculas():
     lst = trabajo_final.getAsistenciaTotalPeliculas()
     return jsonify(lst)
 
+@app.route('/api/data/getAsistenciaCadenaPeliculas', methods=['GET'])
+def getAsistenciaCadenaPeliculas():
+    lst = trabajo_final.getAsistenciaCadenaPeliculas()
+    return jsonify(lst)
+
+@app.route('/api/data/getAsistenciaCadenaPeliculasPorcentaje', methods=['GET'])
+def getAsistenciaCadenaPeliculasPorcentaje():
+    lst = trabajo_final.getAsistenciaCadenaPeliculasPorcentaje()
+    return jsonify(lst)
+
+@app.route('/api/data/getMasVistaMenosVista', methods=['GET'])
+def getMasVistaMenosVista():
+    lst = trabajo_final.getMasVistaMenosVista()
+    return jsonify(lst)
+
+@app.route('/api/data/getAsistenciaCinePaisFecha/<string:fechaInicio>/<string:fechaFin>/<string:anio>', methods=['GET'])
+def getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio):
+    lst = trabajo_final.getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio)
+    return jsonify(lst)
+
 
 if __name__ == '__main__':
     app.run(host='localhost', port=4000)

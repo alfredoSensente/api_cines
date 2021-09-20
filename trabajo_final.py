@@ -1,3 +1,4 @@
+from datetime import date
 import pandas as pd
 import glob
 import pymongo
@@ -45,6 +46,7 @@ def insertData(data):
 def getOne(titulo):
     dictionary = collection.find_one({'Title':titulo}, {'_id': False, 'index': False})
     return(dictionary)
+
 #Consulta 1
 def getTotalPersonasPais():
     """Mostrar de cada pais el total de personas que visitaron el cine en la semana"""
@@ -112,6 +114,91 @@ def getAsistenciaTotalPeliculas():
     ])
     
     return (list(cursor))
+
+#Consulta 5
+def getAsistenciaCadenaPeliculas():
+    """El total de personas que vieron cada pelicula en centroamerica por cadena de cine"""
+    cursor = collection.aggregate([
+        {   
+            '$group': {
+                '_id': {
+                    'Titulo': "$Title",
+                    'Cadena': "$Circuit"
+                },
+                'personas': {
+                        '$sum': "$Week\nAdm"
+                 }
+            }
+        },
+        {
+            '$sort':{
+                '_id.Titulo': 1
+            }
+        }
+    ])
+    
+    return (list(cursor))
+
+#Consulta 6
+def getAsistenciaCadenaPeliculasPorcentaje():
+    """El total de personas que vieron cada pelicula en centroamerica por cadena de cine pero en porcentaje"""
+    pass
+
+#Consulta 7
+def getMasVistaMenosVista():
+    """Mostrar para cada pelicula el total de personas que acudieron a verla en la semana por pais y ordenarla de la más vista a la menos vista"""
+    cursor = collection.aggregate([
+        {
+            '$group': {
+            '_id': {
+                'Pais': "$Country",
+                'Title': "$Title"
+            },
+            'personas': {
+                '$sum': "$Week\nAdm"
+            }
+            }
+        },
+        {
+            '$sort':{
+                'personas': -1
+            }
+        }
+    ])
+    
+    return (list(cursor))
+
+#Consulta 8
+def getAsistenciaCinePaisFecha(startDate, endDate, year):
+    """Total de personas por cadena de cine, por pais, por semana"""
+    startDate = startDate.replace('-','/')
+    endDate = endDate.replace('-','/')
+
+    cursor = collection.aggregate([
+        {
+            '$group': {
+            '_id': {
+                'Pais': "$Country",
+                'Cadena': "$Circuit",
+                'Titulo': "$Title",
+                'Fecha_Inicio': {
+                    'StartDate':startDate
+                },
+                'Fecha_Fin': {
+                    'EndDate':endDate
+                },
+                'Anio': {
+                    'Year': year
+                }
+            },
+            'personas': {
+                '$sum': "$Week\nAdm"
+            }
+            }
+        }
+    ])
+
+    return(list(cursor))
 
 
 def data():
