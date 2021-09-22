@@ -43,45 +43,84 @@ def insertData(data):
         collection.insert_one(row)
 
 
-def getOne(titulo):
-    dictionary = collection.find_one({'Title':titulo}, {'_id': False, 'index': False})
+def getOne():
+    dictionary = collection.find_one({})
     return(dictionary)
 
 #Consulta 1
-def getTotalPersonasPais():
+def getTotalPersonasPais(startDate, endDate, year):
     """Mostrar de cada pais el total de personas que visitaron el cine en la semana"""
-    cursor = collection.aggregate([{ '$group': {'_id': "$Country", 'personas': {'$sum': "$Week\nAdm"}}}])
-    return(list(cursor))
-
-#Consulta 2
-def getTotalPersonas():
-    """Mostrar el total de personas de los 5 paises que visitaron el cine en la semana"""
+    startDate = startDate.replace('-','/')
+    endDate = endDate.replace('-','/')
     cursor = collection.aggregate([
-        {
-            '$group': {
-            '_id': 'null',
-            'total_personas': {
+        { '$group': {
+            '_id': {
+                'Pais': "$Country",
+                'Fecha_Inicio': {
+                    'StartDate':startDate
+                },
+                'Fecha_Fin': {
+                    'EndDate':endDate
+                },
+                'Anio': {
+                    'Year': year
+                }
+            },
+            'personas': {
                 '$sum': "$Week\nAdm"
             }
             }
-        },
+        }
+    ])
+    return(list(cursor))
+
+#Consulta 2
+def getTotalPersonas(startDate, endDate, year):
+    """Mostrar el total de personas de los 5 paises que visitaron el cine en la semana"""
+    startDate = startDate.replace('-','/')
+    endDate = endDate.replace('-','/')
+    cursor = collection.aggregate([
         {
-            '$project': {
-            '_id': 0
+            '$group': {
+                '_id': {
+                    'Fecha_Inicio': {
+                        'StartDate':startDate
+                    },
+                    'Fecha_Fin': {
+                        'EndDate':endDate
+                    },
+                    'Anio': {
+                        'Year': year
+                    }
+                },
+                'total_personas': {
+                    '$sum': "$Week\nAdm"
+                }
             }
         }
     ])
     return(list(cursor))
 
 #Consulta 3
-def getTotalPersonasCadenaPais():
+def getTotalPersonasCadenaPais(startDate, endDate, year):
     """Mostrar el total de personas que acudieron al cine en la semana, por cadena de cine para cada pais"""
+    startDate = startDate.replace('-','/')
+    endDate = endDate.replace('-','/')
     cursor = collection.aggregate([
         {
             '$group': {
             '_id': {
                 'Pais': "$Country",
-                'Cadena': "$Circuit"
+                'Cadena': "$Circuit",
+                'Fecha_Inicio': {
+                    'StartDate':startDate
+                },
+                'Fecha_Fin': {
+                    'EndDate':endDate
+                },
+                'Anio': {
+                    'Year': year
+                }
             },
             'personas': {
                 '$sum': "$Week\nAdm"
@@ -142,17 +181,54 @@ def getAsistenciaCadenaPeliculas():
 #Consulta 6
 def getAsistenciaCadenaPeliculasPorcentaje():
     """El total de personas que vieron cada pelicula en centroamerica por cadena de cine pero en porcentaje"""
-    pass
+    listaAsistenciaCadena = getAsistenciaCadenaPeliculas()
+    cursor = collection.aggregate([
+        {   
+            '$group': {
+                '_id': {
+                    'Titulo':'$Title',
+                },
+                'personas': {
+                    '$sum': "$Week\nAdm"
+                }
+            }
+        }
+    ])
+    res = {}
+    cont = 0
+
+    for p in list(cursor):
+        for i in listaAsistenciaCadena:    
+            if p['_id']['Titulo'] == i['_id']['Titulo']:
+                res[cont] = {
+                    'Pelicula': i['_id']['Titulo'],
+                    'Cadena': i['_id']['Cadena'],
+                    'Porcentaje':(i['personas']/p['personas'])*100,
+                }
+                cont += 1
+
+    return (res)
 
 #Consulta 7
-def getMasVistaMenosVista():
+def getMasVistaMenosVista(startDate, endDate, year):
     """Mostrar para cada pelicula el total de personas que acudieron a verla en la semana por pais y ordenarla de la más vista a la menos vista"""
+    startDate = startDate.replace('-','/')
+    endDate = endDate.replace('-','/')
     cursor = collection.aggregate([
         {
             '$group': {
             '_id': {
                 'Pais': "$Country",
-                'Title': "$Title"
+                'Title': "$Title",
+                'Fecha_Inicio': {
+                    'StartDate':startDate
+                },
+                'Fecha_Fin': {
+                    'EndDate':endDate
+                },
+                'Anio': {
+                    'Year': year
+                }
             },
             'personas': {
                 '$sum': "$Week\nAdm"
@@ -200,7 +276,41 @@ def getAsistenciaCinePaisFecha(startDate, endDate, year):
 
     return(list(cursor))
 
+#Consulta 9
+def getAsistenciaCinePaisPorcentaje(startDate, endDate, year):
+    """Consulta 8 en Porcentaje"""
+    startDate = startDate.replace('-','/')
+    endDate = endDate.replace('-','/')
+    consulta8_list = getAsistenciaCinePaisFecha(startDate, endDate, year)
+    cursor = collection.aggregate([
+        {   
+            '$group': {
+                '_id': {
+                    'Titulo':'$Title',
+                    'Cadena':'$Circuit'
+                },
+                'personas': {
+                    '$sum': "$Week\nAdm"
+                }
+            }
+        }
+    ])
 
+    res = {}
+    cont = 0
+    for p in list(cursor):
+        for i in consulta8_list:    
+            if p['_id']['Titulo'] == i['_id']['Titulo']:
+                res[cont] = {
+                    'Pelicula': i['_id']['Titulo'],
+                    'Cadena': i['_id']['Cadena'],
+                    'Pais': i['_id']['Pais'],
+                    'Porcentaje':(i['personas']/p['personas'])*100,
+                }
+                cont += 1
+
+    return (res)
+    
 def data():
 
     file_list = glob.glob('./Reportes/*.xls')
