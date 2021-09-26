@@ -68,9 +68,9 @@ def getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio):
     return jsonify(lst)
 
 #Consulta 9
-@app.route('/api/data/getAsistenciaCinePaisPorcentaje/<string:fechaInicio>/<string:fechaFin>/<string:anio>', methods=['GET'])
-def getAsistenciaCinePaisPorcentaje(fechaInicio, fechaFin, anio):
-    lst = trabajo_final.getAsistenciaCinePaisPorcentaje(fechaInicio, fechaFin, anio)
+@app.route('/api/data/getAsistenciaCinePaisPorcentaje/<string:fechaInicio>/<string:fechaFin>/<string:anio>/<string:pais>', methods=['GET'])
+def getAsistenciaCinePaisPorcentaje(fechaInicio, fechaFin, anio, pais):
+    lst = trabajo_final.getAsistenciaCinePaisPorcentaje(fechaInicio, fechaFin, anio, pais)
     return jsonify(lst)
 
 
