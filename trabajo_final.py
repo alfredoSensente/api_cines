@@ -42,6 +42,8 @@ def insertData(data):
     for row in data_dict:
         collection.insert_one(row)
 
+    return(len(data_dict))
+
 
 def getOne():
     dictionary = collection.find_one({})
@@ -354,5 +356,5 @@ def data():
     newDFrame['Week\nGross $'] = pd.to_numeric(
         newDFrame['Week\nGross $'], downcast="float")
 
-    insertData(newDFrame)
-    return("Success")
+    insertRows = insertData(newDFrame)
+    return(insertRows)
