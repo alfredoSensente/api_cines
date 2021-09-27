@@ -78,9 +78,9 @@ def getMasVistaMenosVista(fechaInicio, fechaFin, anio):
 # Consulta 8
 
 
-@app.route('/api/data/getAsistenciaCinePaisFecha/<string:fechaInicio>/<string:fechaFin>/<string:anio>', methods=['GET'])
-def getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio):
-    lst = trabajo_final.getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio)
+@app.route('/api/data/getAsistenciaCinePaisFecha/<string:fechaInicio>/<string:fechaFin>/<string:anio>/<string:pais>', methods=['GET'])
+def getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio, pais):
+    lst = trabajo_final.getAsistenciaCinePaisFecha(fechaInicio, fechaFin, anio, pais)
     return jsonify(lst)
 
 #Consulta 9

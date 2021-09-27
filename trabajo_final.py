@@ -130,7 +130,8 @@ def getTotalPersonasCadenaPais(startDate, endDate, year):
         },
         {
             '$sort': {
-                '_id.Pais': 1
+                '_id.Pais': 1,
+                '_id.Cadena': 1,
             }
         }
     ])
@@ -176,7 +177,8 @@ def getAsistenciaCadenaPeliculas():
         },
         {
             '$sort': {
-                '_id.Titulo': 1
+                '_id.Titulo': 1,
+                '_id.Cadena': 1,
             }
         }
     ])
@@ -210,7 +212,7 @@ def getAsistenciaCadenaPeliculasPorcentaje():
                 res[cont] = {
                     'Pelicula': i['_id']['Titulo'],
                     'Cadena': i['_id']['Cadena'],
-                    'Porcentaje': (i['personas']/p['personas'])*100,
+                    'Porcentaje': "{0:.2f}".format((i['personas']/p['personas'])*100),
                 }
                 cont += 1
 
@@ -244,6 +246,7 @@ def getMasVistaMenosVista(startDate, endDate, year):
         },
         {
             '$sort': {
+                '_id.Title': 1,
                 'personas': -1
             }
         }
@@ -279,6 +282,12 @@ def getAsistenciaCinePaisFecha(startDate, endDate, year, pais):
                     '$sum': "$Week\nAdm"
                 }
             }
+        },
+        {
+            '$sort': {
+                '_id.Titulo': 1,
+                '_id.Cadena': 1,
+            }
         }
     ])
 
@@ -311,6 +320,11 @@ def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais):
                     '$sum': "$Week\nAdm"
                 }
             }
+        },
+        {
+            '$sort': {
+                '_id.Titulo': 1,
+            }
         }
     ])
 
@@ -323,7 +337,7 @@ def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais):
                     'Pelicula': i['_id']['Titulo'],
                     'Cadena': i['_id']['Cadena'],
                     'Pais': i['_id']['Pais'],
-                    'Porcentaje': (i['personas']/p['personas'])*100,
+                    'Porcentaje': "{0:.2f}".format((i['personas']/p['personas'])*100),
                 }
                 cont += 1
 
