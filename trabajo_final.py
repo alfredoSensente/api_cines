@@ -70,6 +70,13 @@ def getTotalPersonasPais(startDate, endDate, year):
             },
             'personas': {
                 '$sum': "$Week\nAdm"
+            },
+            'recaudacion':{
+                '$sum': {
+                    '$round':[
+                        "$Week\nGross $", 0
+                    ]
+                }
             }
         }
         }
@@ -106,7 +113,7 @@ def getTotalPersonas(startDate, endDate, year):
 
 
 def getTotalPersonasCadenaPais(startDate, endDate, year):
-    """Mostrar el total de personas que acudieron al cine en la semana, por cadena de cine para cada pais"""
+    """Mostrar el total de personas que acudieron al cine en la semana, todas las cadenas de cine para todos los paises"""
     startDate = startDate.replace('-', '/')
     endDate = endDate.replace('-', '/')
     cursor = collection.aggregate([
@@ -138,12 +145,121 @@ def getTotalPersonasCadenaPais(startDate, endDate, year):
 
     return (list(cursor))
 
+def getTotalPersonasCadenaPais_Pais_Cadena(startDate, endDate, year, pais, cadena):
+    """Mostrar el total de personas que acudieron al cine en la semana,  por cadena de cine, por pais"""
+    startDate = startDate.replace('-', '/')
+    endDate = endDate.replace('-', '/')
+    cursor = collection.aggregate([
+        {
+            '$match': {
+                'StartDate': startDate,
+                'EndDate': endDate,
+                'Year': year,
+                'Country': pais,
+                'Circuit': cadena,
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'Pais': "$Country",
+                    'Cadena': "$Circuit",
+                },
+                'personas': {
+                    '$sum': "$Week\nAdm"
+                }
+            }
+        },
+        {
+            '$sort': {
+                '_id.Pais': 1,
+                '_id.Cadena': 1,
+            }
+        }
+    ])
+
+    return (list(cursor))
+
+def getTotalPersonasCadenaPais_Pais(startDate, endDate, year, pais):
+    """Mostrar el total de personas que acudieron al cine en la semana, todas las cadenas de cine por pais"""
+    startDate = startDate.replace('-', '/')
+    endDate = endDate.replace('-', '/')
+    cursor = collection.aggregate([
+        {
+            '$match': {
+                'StartDate': startDate,
+                'EndDate': endDate,
+                'Year': year,
+                'Country': pais,
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'Pais': "$Country",
+                    'Cadena': "$Circuit",
+                },
+                'personas': {
+                    '$sum': "$Week\nAdm"
+                }
+            }
+        },
+        {
+            '$sort': {
+                '_id.Pais': 1,
+                '_id.Cadena': 1,
+            }
+        }
+    ])
+
+    return (list(cursor))
+
+def getTotalPersonasCadenaPais_Cadena(startDate, endDate, year, cadena):
+    """Mostrar el total de personas que acudieron al cine en la semana, todas las cadenas de cine por pais"""
+    startDate = startDate.replace('-', '/')
+    endDate = endDate.replace('-', '/')
+    cursor = collection.aggregate([
+        {
+            '$match': {
+                'StartDate': startDate,
+                'EndDate': endDate,
+                'Year': year,
+                'Circuit': cadena,
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'Pais': "$Country",
+                    'Cadena': "$Circuit",
+                },
+                'personas': {
+                    '$sum': "$Week\nAdm"
+                }
+            }
+        },
+        {
+            '$sort': {
+                '_id.Pais': 1,
+                '_id.Cadena': 1,
+            }
+        }
+    ])
+
+    return (list(cursor))
+
+
 # Consulta 4
 
 
-def getAsistenciaTotalPeliculas():
-    """El total de personas que vieron cada pelicula en centroamerica"""
+def getAsistenciaTotalPeliculas(pelicula):
+    """El total de personas que vieron cada pelicula en centroamerica por pelicula"""
     cursor = collection.aggregate([
+        {
+            '$match': {
+                'Title': pelicula,
+            }
+        },
         {
             '$group': {
                 '_id': {
@@ -158,12 +274,18 @@ def getAsistenciaTotalPeliculas():
 
     return (list(cursor))
 
+
 # Consulta 5
 
 
-def getAsistenciaCadenaPeliculas():
+def getAsistenciaCadenaPeliculas(pelicula):
     """El total de personas que vieron cada pelicula en centroamerica por cadena de cine"""
     cursor = collection.aggregate([
+        {
+            '$match': {
+                'Title': pelicula,
+            }
+        },
         {
             '$group': {
                 '_id': {
@@ -188,10 +310,15 @@ def getAsistenciaCadenaPeliculas():
 # Consulta 6
 
 
-def getAsistenciaCadenaPeliculasPorcentaje():
+def getAsistenciaCadenaPeliculasPorcentaje(pelicula):
     """El total de personas que vieron cada pelicula en centroamerica por cadena de cine pero en porcentaje"""
-    listaAsistenciaCadena = getAsistenciaCadenaPeliculas()
+    listaAsistenciaCadena = getAsistenciaCadenaPeliculas(pelicula)
     cursor = collection.aggregate([
+        {
+            '$match': {
+                'Title': pelicula,
+            }
+        },
         {
             '$group': {
                 '_id': {
@@ -221,7 +348,7 @@ def getAsistenciaCadenaPeliculasPorcentaje():
 # Consulta 7
 
 
-def getMasVistaMenosVista(startDate, endDate, year):
+def getMasVistaMenosVista(startDate, endDate, year, pelicula):
     """Mostrar para cada pelicula el total de personas que acudieron a verla en la semana por pais y ordenarla de la más vista a la menos vista"""
     startDate = startDate.replace('-', '/')
     endDate = endDate.replace('-', '/')
@@ -230,7 +357,8 @@ def getMasVistaMenosVista(startDate, endDate, year):
             '$match': {
                 'StartDate': startDate,
                 'EndDate': endDate,
-                'Year': year
+                'Year': year,
+                'Title': pelicula
             }
         },
         {
@@ -257,7 +385,7 @@ def getMasVistaMenosVista(startDate, endDate, year):
 # Consulta 8
 
 
-def getAsistenciaCinePaisFecha(startDate, endDate, year, pais):
+def getAsistenciaCinePaisFecha(startDate, endDate, year, pais, pelicula):
     """Total de personas por cadena de cine, por pais, por semana"""
     startDate = startDate.replace('-', '/')
     endDate = endDate.replace('-', '/')
@@ -268,7 +396,8 @@ def getAsistenciaCinePaisFecha(startDate, endDate, year, pais):
                 'StartDate': startDate,
                 'EndDate': endDate,
                 'Year': year,
-                'Country': pais
+                'Country': pais,
+                'Title': pelicula,
             }
         },
         {
@@ -280,7 +409,10 @@ def getAsistenciaCinePaisFecha(startDate, endDate, year, pais):
                 },
                 'personas': {
                     '$sum': "$Week\nAdm"
-                }
+                },
+                'ganancias': {
+                    '$sum': "$Week\nGross $"
+                },
             }
         },
         {
@@ -296,18 +428,19 @@ def getAsistenciaCinePaisFecha(startDate, endDate, year, pais):
 # Consulta 9
 
 
-def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais):
+def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais, pelicula):
     """Consulta 8 en Porcentaje"""
     startDate = startDate.replace('-', '/')
     endDate = endDate.replace('-', '/')
-    consulta8_list = getAsistenciaCinePaisFecha(startDate, endDate, year, pais)
+    consulta8_list = getAsistenciaCinePaisFecha(startDate, endDate, year, pais, pelicula)
     cursor = collection.aggregate([
         {
             '$match': {
                 'StartDate': startDate,
                 'EndDate': endDate,
                 'Year': year,
-                'Country': pais
+                'Country': pais,
+                'Title': pelicula,
             }
         },
         {
@@ -318,7 +451,7 @@ def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais):
                 },
                 'personas': {
                     '$sum': "$Week\nAdm"
-                }
+                },
             }
         },
         {
@@ -337,11 +470,62 @@ def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais):
                     'Pelicula': i['_id']['Titulo'],
                     'Cadena': i['_id']['Cadena'],
                     'Pais': i['_id']['Pais'],
+                    'Asistencia': i['personas'],
                     'Porcentaje': "{0:.2f}".format((i['personas']/p['personas'])*100),
+                    'Ganancias': "{0:.2f}".format(i['ganancias'])
                 }
                 cont += 1
 
     return (res)
+
+# Obtener peliculas por fecha
+
+def getFechaPeliculas(startDate, endDate, year):
+    """Muestra las peliculas que se mostraron en una semana"""
+    startDate = startDate.replace('-', '/')
+    endDate = endDate.replace('-', '/')
+    cursor = collection.aggregate([
+        {
+            '$match': {
+                'StartDate': startDate,
+                'EndDate': endDate,
+                'Year': year,
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'Titulo': "$Title"
+                },
+            }
+        }
+    ])
+    return (list(cursor))
+
+# Obtener peliculas por fecha y pais
+
+def getFechaPaisPeliculas(startDate, endDate, year, pais):
+    """Muestra las peliculas que se mostraron en una semana en determinado pais"""
+    startDate = startDate.replace('-', '/')
+    endDate = endDate.replace('-', '/')
+    cursor = collection.aggregate([
+        {
+            '$match': {
+                'StartDate': startDate,
+                'EndDate': endDate,
+                'Year': year,
+                'Country': pais,
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'Titulo': "$Title"
+                },
+            }
+        }
+    ])
+    return (list(cursor))
 
 
 def data():
