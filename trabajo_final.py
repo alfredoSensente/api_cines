@@ -71,9 +71,9 @@ def getTotalPersonasPais(startDate, endDate, year):
             'personas': {
                 '$sum': "$Week\nAdm"
             },
-            'recaudacion':{
+            'recaudacion': {
                 '$sum': {
-                    '$round':[
+                    '$round': [
                         "$Week\nGross $", 0
                     ]
                 }
@@ -145,6 +145,7 @@ def getTotalPersonasCadenaPais(startDate, endDate, year):
 
     return (list(cursor))
 
+
 def getTotalPersonasCadenaPais_Pais_Cadena(startDate, endDate, year, pais, cadena):
     """Mostrar el total de personas que acudieron al cine en la semana,  por cadena de cine, por pais"""
     startDate = startDate.replace('-', '/')
@@ -180,6 +181,7 @@ def getTotalPersonasCadenaPais_Pais_Cadena(startDate, endDate, year, pais, caden
 
     return (list(cursor))
 
+
 def getTotalPersonasCadenaPais_Pais(startDate, endDate, year, pais):
     """Mostrar el total de personas que acudieron al cine en la semana, todas las cadenas de cine por pais"""
     startDate = startDate.replace('-', '/')
@@ -213,6 +215,7 @@ def getTotalPersonasCadenaPais_Pais(startDate, endDate, year, pais):
     ])
 
     return (list(cursor))
+
 
 def getTotalPersonasCadenaPais_Cadena(startDate, endDate, year, cadena):
     """Mostrar el total de personas que acudieron al cine en la semana, todas las cadenas de cine por pais"""
@@ -369,6 +372,13 @@ def getMasVistaMenosVista(startDate, endDate, year, pelicula):
                 },
                 'personas': {
                     '$sum': "$Week\nAdm"
+                },
+                'recaudacion': {
+                    '$sum': {
+                        '$round': [
+                            "$Week\nGross $", 0
+                        ]
+                    }
                 }
             }
         },
@@ -432,7 +442,8 @@ def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais, pelicula):
     """Consulta 8 en Porcentaje"""
     startDate = startDate.replace('-', '/')
     endDate = endDate.replace('-', '/')
-    consulta8_list = getAsistenciaCinePaisFecha(startDate, endDate, year, pais, pelicula)
+    consulta8_list = getAsistenciaCinePaisFecha(
+        startDate, endDate, year, pais, pelicula)
     cursor = collection.aggregate([
         {
             '$match': {
@@ -480,6 +491,7 @@ def getAsistenciaCinePaisPorcentaje(startDate, endDate, year, pais, pelicula):
 
 # Obtener peliculas por fecha
 
+
 def getFechaPeliculas(startDate, endDate, year):
     """Muestra las peliculas que se mostraron en una semana"""
     startDate = startDate.replace('-', '/')
@@ -503,6 +515,7 @@ def getFechaPeliculas(startDate, endDate, year):
     return (list(cursor))
 
 # Obtener peliculas por fecha y pais
+
 
 def getFechaPaisPeliculas(startDate, endDate, year, pais):
     """Muestra las peliculas que se mostraron en una semana en determinado pais"""
